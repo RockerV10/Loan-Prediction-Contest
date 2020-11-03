@@ -1,0 +1,9 @@
+name: "Loan Prediction"
+navbar:
+  title: "Loan Prediction"
+  left:
+    - text: "Read Me"
+      href: index.html
+    - text: "Analysis"
+      href: analysis.html
+output_dir: "docs"

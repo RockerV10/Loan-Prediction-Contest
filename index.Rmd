@@ -1,0 +1,16 @@
+---
+title: "Introduction"
+output: html_document
+---
+
+This is machine learning examination. Dataset and problem statement is used from [Analytics Vidhya - Loan Prediction contest](https://datahack.analyticsvidhya.com/contest/practice-problem-loan-prediction-iii/#About).
+
+Full analysis, along with a description, was prepared and executed in **R Markdown**.
+This workbook was also used as semester evaluation for the subject ***Non-classical statistical methods***.
+
+## **Work problem**
+  
+This database contains data from **Dream Housing Finance** company regarding mortgages. DHF wants to automatize the evaluation of new customers. 
+
+
+Any suggestions, tips and reviews are appreciated as it is my first ML analysis.

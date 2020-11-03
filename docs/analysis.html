@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Loan Prediction analysis</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+      </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Loan Prediction</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Read Me</a>
+</li>
+<li>
+  <a href="analysis.html">Analysis</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Loan Prediction analysis</h1>
+
+</div>
+
+
+<div id="data-cleaning" class="section level1">
+<h1>1. Data cleaning</h1>
+<pre class="r"><code>library(readr)  
+library(dplyr)     
+library(zoo)
+library(forcats) # adding a new value to the categorical variable</code></pre>
+<ul>
+<li><p><strong>Loading train and test datasets</strong></p></li>
+<li><p><strong>Quick examination of data </strong></p></li>
+</ul>
+<pre class="r"><code>summary(loan.train)</code></pre>
+<pre><code>##    Loan_ID              Gender       Married      Dependents 
+##  Length:614         Male   :489   Yes    :398   0      :345  
+##  Class :character   Female :112   No     :213   1      :102  
+##  Mode  :character   Missing:  0   Missing:  0   2      :101  
+##                     NA&#39;s   : 13   NA&#39;s   :  3   3+     : 51  
+##                                                 Missing:  0  
+##                                                 NA&#39;s   : 15  
+##                                                              
+##         Education   Self_Employed ApplicantIncome CoapplicantIncome
+##  Graduate    :480   No     :500   Min.   :  150   Min.   :    0    
+##  Not Graduate:134   Yes    : 82   1st Qu.: 2878   1st Qu.:    0    
+##  Missing     :  0   Missing:  0   Median : 3812   Median : 1188    
+##                     NA&#39;s   : 32   Mean   : 5403   Mean   : 1621    
+##                                   3rd Qu.: 5795   3rd Qu.: 2297    
+##                                   Max.   :81000   Max.   :41667    
+##                                                                    
+##    LoanAmount    Loan_Amount_Term Credit_History   Property_Area Loan_Status
+##  Min.   :  9.0   360    :512      0      : 89    Urban    :202   Y:422      
+##  1st Qu.:100.0   180    : 44      1      :475    Semiurban:233   N:192      
+##  Median :128.0   480    : 15      Missing:  0    Rural    :179              
+##  Mean   :146.4   300    : 13      NA&#39;s   : 50    Missing  :  0              
+##  3rd Qu.:168.0   84     :  4                                                
+##  Max.   :700.0   (Other): 12                                                
+##  NA&#39;s   :22      NA&#39;s   : 14</code></pre>
+<p><code>Loan_ID</code> column is useless for analysis and will confuse our model. <code>NA</code> values in catogical variables will be clasified as new factor <strong><em>Missing</em></strong>. Only continuous variable with <code>NA</code> is <code>LoanAmount</code>, and these values will be replaced with mean of this column.</p>
+<pre class="r"><code>loan.train &lt;- select(loan.train, -1) </code></pre>
+<pre class="r"><code>loan.train$Gender &lt;- fct_explicit_na(loan.train$Gender, na_level = &#39;Missing&#39;)
+loan.train$Married &lt;- fct_explicit_na(loan.train$Married, na_level = &#39;Missing&#39;)
+loan.train$Dependents &lt;- fct_explicit_na(loan.train$Dependents, na_level = &#39;Missing&#39;)
+loan.train$Education &lt;- fct_explicit_na(loan.train$Education, na_level = &#39;Missing&#39;)
+loan.train$Self_Employed &lt;- fct_explicit_na(loan.train$Self_Employed, na_level = &#39;Missing&#39;)
+loan.train$Loan_Amount_Term &lt;- fct_explicit_na(loan.train$Loan_Amount_Term, na_level = &#39;Missing&#39;)
+loan.train$Credit_History &lt;- fct_explicit_na(loan.train$Credit_History, na_level = &#39;Missing&#39;)
+loan.train$Property_Area &lt;- fct_explicit_na(loan.train$Property_Area, na_level = &#39;Missing&#39;)
+loan.train$LoanAmount &lt;- na.aggregate(loan.train$LoanAmount)
+
+loan.test$Gender &lt;- fct_explicit_na(loan.test$Gender, na_level = &#39;Missing&#39;)
+loan.test$Married &lt;- fct_explicit_na(loan.test$Married, na_level = &#39;Missing&#39;)
+loan.test$Dependents &lt;- fct_explicit_na(loan.test$Dependents, na_level = &#39;Missing&#39;)
+loan.test$Education &lt;- fct_explicit_na(loan.test$Education, na_level = &#39;Missing&#39;)
+loan.test$Self_Employed &lt;- fct_explicit_na(loan.test$Self_Employed, na_level = &#39;Missing&#39;)
+loan.test$Loan_Amount_Term &lt;- fct_explicit_na(loan.test$Loan_Amount_Term, na_level = &#39;Missing&#39;)
+loan.test$Credit_History &lt;- fct_explicit_na(loan.test$Credit_History, na_level = &#39;Missing&#39;)
+loan.test$Property_Area &lt;- fct_explicit_na(loan.test$Property_Area, na_level = &#39;Missing&#39;)
+loan.test$LoanAmount &lt;- na.aggregate(loan.test$LoanAmount)</code></pre>
+</div>
+<div id="visualisation-and-overview-data-by-ggplot2-package." class="section level1">
+<h1>2. Visualisation and overview data by <code>ggplot2</code> package.</h1>
+<p>I have loaded the data and set column types as below ## Description of variables I have loaded the data and set column types as below</p>
+<ul>
+<li>Gender: <strong><em>dichotomous variable</em></strong> - <code>male</code>, <code>female</code></li>
+<li>Married : <strong><em>dichotomous variable</em></strong> - <code>Y</code> , <code>N</code></li>
+<li>Dependents : <strong><em>categorical variable</em></strong> - number of dependents <code>0</code>, <code>1</code>, <code>2</code>, <code>+3</code></li>
+<li>Education : <strong><em>categorical variable</em></strong> - <code>Graduate</code> , <code>Not Graduate</code></li>
+<li>Self_Employed : <strong><em>dichotomous variable</em></strong> - <code>Y</code> , <code>N</code></li>
+<li>ApplicantIncome : <strong><em>continuous variable</em></strong> - applicant income</li>
+<li>CoapplicantIncome : <strong><em>continuous variable</em></strong> - coapplicant income</li>
+<li>LoanAmount : <strong><em>continuous variable</em></strong> - amount of loan</li>
+<li>Loan_Amount_Term: <strong><em>categorical variable</em></strong> - term of loan in months <code>6</code>, <code>12</code>, <code>36</code>, <code>60</code>, <code>84</code>, <code>120</code>, <code>180</code>, <code>240</code>, <code>300</code>, <code>350</code>, <code>360</code>, <code>480</code></li>
+<li>Credit_History : <strong><em>dichotomous variable</em></strong> - credit history meets guidelines <code>1</code> Yes, <code>0</code> No</li>
+<li>Property_Area : <strong><em>categorical variable </em></strong> - <code>Urban</code>, <code>Semi Urban</code>, <code>Rural</code></li>
+<li>Loan_Status : <strong><em>explained dichotomous variable</em></strong> loan approved <code>Y</code> , <code>N</code></li>
+</ul>
+<div id="again-summary-of-train-dataset" class="section level2">
+<h2>Again summary of train dataset</h2>
+<pre class="r"><code>summary(loan.train)</code></pre>
+<pre><code>##      Gender       Married      Dependents         Education   Self_Employed
+##  Male   :489   Yes    :398   0      :345   Graduate    :480   No     :500  
+##  Female :112   No     :213   1      :102   Not Graduate:134   Yes    : 82  
+##  Missing: 13   Missing:  3   2      :101   Missing     :  0   Missing: 32  
+##                              3+     : 51                                   
+##                              Missing: 15                                   
+##                                                                            
+##                                                                            
+##  ApplicantIncome CoapplicantIncome   LoanAmount    Loan_Amount_Term
+##  Min.   :  150   Min.   :    0     Min.   :  9.0   360    :512     
+##  1st Qu.: 2878   1st Qu.:    0     1st Qu.:100.2   180    : 44     
+##  Median : 3812   Median : 1188     Median :129.0   480    : 15     
+##  Mean   : 5403   Mean   : 1621     Mean   :146.4   Missing: 14     
+##  3rd Qu.: 5795   3rd Qu.: 2297     3rd Qu.:164.8   300    : 13     
+##  Max.   :81000   Max.   :41667     Max.   :700.0   84     :  4     
+##                                                    (Other): 12     
+##  Credit_History   Property_Area Loan_Status
+##  0      : 89    Urban    :202   Y:422      
+##  1      :475    Semiurban:233   N:192      
+##  Missing: 50    Rural    :179              
+##                 Missing  :  0              
+##                                            
+##                                            
+## </code></pre>
+</div>
+<div id="creating-simple-plots-for-review" class="section level2">
+<h2>Creating simple plots for review</h2>
+<pre class="r"><code>library(ggplot2)</code></pre>
+<p><img src="analysis_files/figure-html/presentation%20of%20plots-1.png" width="672" /><img src="analysis_files/figure-html/presentation%20of%20plots-2.png" width="672" /><img src="analysis_files/figure-html/presentation%20of%20plots-3.png" width="672" /></p>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
+<p>Shown plots show that variables will not differentiate the matter of granting a loan. Although variables such as the number of dependents, area of the property and certainly if credit history met guidelines can be statistically significant.</p>
+</div>
+</div>
+</div>
+<div id="analysis" class="section level1">
+<h1>3. Analysis</h1>
+<pre class="r"><code>library(caret) # confusion matrix</code></pre>
+<div id="divison-of-the-dataset-into-train-and-test-parts-31-ratio" class="section level2">
+<h2>Divison of the dataset into train and test parts <strong>(3:1 ratio)</strong></h2>
+<pre class="r"><code>set.seed(1998) # seed for repeated values
+
+divide = sample(2, nrow(loan.train), replace = TRUE, prob = c(0.75, 0.25))
+loan.train.train &lt;- loan.train[divide == 1, ] 
+loan.train.test &lt;- loan.train[divide == 2, ] </code></pre>
+</div>
+<div id="tree-clasification" class="section level2">
+<h2>Tree clasification</h2>
+<pre class="r"><code>library(party) # tree clasification and random forrests</code></pre>
+<div id="firstly-im-checking-score-for-single-tree-classification-on-the-test-dataset." class="section level4">
+<h4>Firstly I’m checking score for single tree classification on the test dataset.</h4>
+<pre class="r"><code>tree &lt;- ctree(Loan_Status ~ ., data = loan.train.train)
+plot(tree)</code></pre>
+<p><img src="analysis_files/figure-html/tree%20train-1.png" width="672" /></p>
+<pre class="r"><code>confusionMatrix(predict(tree), loan.train.train$Loan_Status, positive = &quot;Y&quot;)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   Y   N
+##          Y 309  82
+##          N   4  56
+##                                         
+##                Accuracy : 0.8093        
+##                  95% CI : (0.77, 0.8445)
+##     No Information Rate : 0.694         
+##     P-Value [Acc &gt; NIR] : 2.004e-08     
+##                                         
+##                   Kappa : 0.4668        
+##                                         
+##  Mcnemar&#39;s Test P-Value : &lt; 2.2e-16     
+##                                         
+##             Sensitivity : 0.9872        
+##             Specificity : 0.4058        
+##          Pos Pred Value : 0.7903        
+##          Neg Pred Value : 0.9333        
+##              Prevalence : 0.6940        
+##          Detection Rate : 0.6851        
+##    Detection Prevalence : 0.8670        
+##       Balanced Accuracy : 0.6965        
+##                                         
+##        &#39;Positive&#39; Class : Y             
+## </code></pre>
+<p>Single tree not surprisingly indicates that <code>Credit_History</code> is the main factor when predicting. Applicants with positive result <code>1</code> or <code>NA</code> as <code>Missing</code> values were granted a mortgage. 80.9% accuracy is not a bad score, but for train set it could be much better.</p>
+</div>
+<div id="test-dataset" class="section level4">
+<h4>Test dataset</h4>
+<pre class="r"><code>pred_tree = predict(tree, newdata = loan.train.test)
+confusionMatrix(pred_tree, loan.train.test$Loan_Status, positive = &quot;Y&quot;) </code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   Y   N
+##          Y 106  28
+##          N   3  26
+##                                         
+##                Accuracy : 0.8098        
+##                  95% CI : (0.741, 0.867)
+##     No Information Rate : 0.6687        
+##     P-Value [Acc &gt; NIR] : 4.578e-05     
+##                                         
+##                   Kappa : 0.514         
+##                                         
+##  Mcnemar&#39;s Test P-Value : 1.629e-05     
+##                                         
+##             Sensitivity : 0.9725        
+##             Specificity : 0.4815        
+##          Pos Pred Value : 0.7910        
+##          Neg Pred Value : 0.8966        
+##              Prevalence : 0.6687        
+##          Detection Rate : 0.6503        
+##    Detection Prevalence : 0.8221        
+##       Balanced Accuracy : 0.7270        
+##                                         
+##        &#39;Positive&#39; Class : Y             
+## </code></pre>
+<p>Score on test dataset is the same, as on training. What is worth mentioning is that sensitivity is close to 97%, but specificity is unacceptably low. After all bank probably ‘prefers’ to not grant a loan to a person who could afford it and lose earning opportunity, than granting it to a person who will not pay instalments and the company will lose actual money. In that case, I think it would be good to try the weighted version of tree classification.</p>
+<p>For future analysis, I’ve created a function which will help to track scores and iterations.</p>
+<pre class="r"><code>test_score &lt;- function(x, loop = FALSE) {
+  if (loop == TRUE) {
+  pred_x &lt;- predict(x, newdata = loan.train.test)
+  cf.2 &lt;- confusionMatrix(pred_x, loan.train.test$Loan_Status, positive = &quot;Y&quot;)
+  score &lt;- (data.frame(acc = cf.2$overall[[&#39;Accuracy&#39;]],
+                       sens = cf.2$byClass[[&#39;Sensitivity&#39;]],
+                       spec = cf.2$byClass[[&#39;Specificity&#39;]],
+                       i = i,
+                       j = j))}
+  if (loop == FALSE) { 
+    pred_x &lt;- predict(x, newdata = loan.train.test)
+    cf.2 &lt;- confusionMatrix(pred_x, loan.train.test$Loan_Status, positive = &quot;Y&quot;)
+    score &lt;- (data.frame(acc = cf.2$overall[[&#39;Accuracy&#39;]],
+                         sens = cf.2$byClass[[&#39;Sensitivity&#39;]],
+                         spec = cf.2$byClass[[&#39;Specificity&#39;]]))
+    
+  }
+  return(score)          
+}</code></pre>
+<p>It tracks accuracy, sensitivity, specificity and <code>i</code> and <code>j</code> weight parameters (if needed) for <em>test</em> dataset.</p>
+</div>
+<div id="combination-of-weighted-errors-from-1-to-10" class="section level4">
+<h4>Combination of weighted errors (from 1 to 10)</h4>
+<pre class="r"><code>df &lt;- data.frame(acc = NULL,sens = NULL,spec = NULL, i = NULL,j = NULL)  #empty dataframe
+for (i in 1:20) {
+  for (j in 1:20) {
+    tree_w &lt;- ctree(Loan_Status ~ ., data = loan.train.train, weights = ifelse(loan.train.train$Loan_Status == &#39;Y&#39;, i, j))
+       df &lt;- rbind(df,test_score(tree_w, loop = TRUE))
+    }
+}
+
+df[df$acc == max(df$acc),] # show rows only with the best score</code></pre>
+<pre><code>##          acc      sens      spec i j
+## 44 0.8282209 0.9633028 0.5555556 3 4</code></pre>
+<pre class="r"><code>tree_w &lt;- ctree(Loan_Status ~ ., data = loan.train.train, weights = ifelse(loan.train.train$Loan_Status == &#39;Y&#39;, 3, 4))
+pred_tree_w &lt;- predict(tree_w, newdata = loan.train.test)
+confusionMatrix(pred_tree_w, loan.train.test$Loan_Status, positive = &quot;Y&quot;)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   Y   N
+##          Y 105  24
+##          N   4  30
+##                                           
+##                Accuracy : 0.8282          
+##                  95% CI : (0.7614, 0.8827)
+##     No Information Rate : 0.6687          
+##     P-Value [Acc &gt; NIR] : 3.854e-06       
+##                                           
+##                   Kappa : 0.5723          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 0.0003298       
+##                                           
+##             Sensitivity : 0.9633          
+##             Specificity : 0.5556          
+##          Pos Pred Value : 0.8140          
+##          Neg Pred Value : 0.8824          
+##              Prevalence : 0.6687          
+##          Detection Rate : 0.6442          
+##    Detection Prevalence : 0.7914          
+##       Balanced Accuracy : 0.7594          
+##                                           
+##        &#39;Positive&#39; Class : Y               
+## </code></pre>
+<p>As we can see weighted errors helped (for the error pair 3, 4). The total outcome increased by almost 2 points in comparison to the first attempt. Even more important is that specificity developed to the level of 55%. It is still disappointing but better that it was before. Mcnemar’s test only confirms my theory that the difference between sensitivity and specificity is statistically significant. (p-value &lt; <span class="math inline">\(\alpha\)</span>) ## Random forests</p>
+</div>
+<div id="training-dataset-the-number-of-trees-is-set-to-200." class="section level4">
+<h4>Training dataset, the number of trees is set to 200.</h4>
+<pre class="r"><code>forest &lt;- cforest(Loan_Status ~ ., data = loan.train.train, control = cforest_unbiased(ntree = 200))
+confusionMatrix(predict(forest), loan.train.train$Loan_Status)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   Y   N
+##          Y 309  82
+##          N   4  56
+##                                         
+##                Accuracy : 0.8093        
+##                  95% CI : (0.77, 0.8445)
+##     No Information Rate : 0.694         
+##     P-Value [Acc &gt; NIR] : 2.004e-08     
+##                                         
+##                   Kappa : 0.4668        
+##                                         
+##  Mcnemar&#39;s Test P-Value : &lt; 2.2e-16     
+##                                         
+##             Sensitivity : 0.9872        
+##             Specificity : 0.4058        
+##          Pos Pred Value : 0.7903        
+##          Neg Pred Value : 0.9333        
+##              Prevalence : 0.6940        
+##          Detection Rate : 0.6851        
+##    Detection Prevalence : 0.8670        
+##       Balanced Accuracy : 0.6965        
+##                                         
+##        &#39;Positive&#39; Class : Y             
+## </code></pre>
+</div>
+<div id="test-dataset-1" class="section level4">
+<h4>Test dataset</h4>
+<pre class="r"><code>pred_forest = predict(forest, newdata = loan.train.test)
+confusionMatrix(pred_forest, loan.train.test$Loan_Status, positive = &quot;Y&quot;) </code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   Y   N
+##          Y 106  28
+##          N   3  26
+##                                         
+##                Accuracy : 0.8098        
+##                  95% CI : (0.741, 0.867)
+##     No Information Rate : 0.6687        
+##     P-Value [Acc &gt; NIR] : 4.578e-05     
+##                                         
+##                   Kappa : 0.514         
+##                                         
+##  Mcnemar&#39;s Test P-Value : 1.629e-05     
+##                                         
+##             Sensitivity : 0.9725        
+##             Specificity : 0.4815        
+##          Pos Pred Value : 0.7910        
+##          Neg Pred Value : 0.8966        
+##              Prevalence : 0.6687        
+##          Detection Rate : 0.6503        
+##    Detection Prevalence : 0.8221        
+##       Balanced Accuracy : 0.7270        
+##                                         
+##        &#39;Positive&#39; Class : Y             
+## </code></pre>
+</div>
+<div id="combination-of-weighted-errors-from-1-to-10-1" class="section level3">
+<h3>Combination of weighted errors (from 1 to 10)</h3>
+<pre class="r"><code>df &lt;- data.frame(acc = NULL,sens = NULL,spec = NULL, i = NULL,j = NULL)
+for (i in 1:10) {
+  for (j in 1:10) {
+    forest_w &lt;- cforest(Loan_Status ~ ., data = loan.train.train, control = cforest_unbiased(ntree = 200), weights = ifelse(loan.train.train$Loan_Status == &#39;Y&#39;, i, j))
+    df &lt;- rbind(df, test_score(forest_w, TRUE))
+    }
+}
+
+head(df[df$acc == max(df$acc),])</code></pre>
+<pre><code>##        acc      sens      spec i j
+## 1 0.809816 0.9724771 0.4814815 1 1
+## 2 0.809816 0.9724771 0.4814815 1 2
+## 3 0.809816 0.9724771 0.4814815 1 3
+## 4 0.809816 0.9724771 0.4814815 1 4
+## 5 0.809816 0.9724771 0.4814815 1 5
+## 6 0.809816 0.9724771 0.4814815 1 6</code></pre>
+<pre class="r"><code>forest_w &lt;- cforest(Loan_Status ~ ., data = loan.train.train, control = cforest_unbiased(ntree = 200), weights = ifelse(loan.train.train$Loan_Status == &#39;Y&#39;, 1, 8))
+pred_forest_w = predict(forest_w, newdata = loan.train.test)
+
+confusionMatrix(pred_forest_w, loan.train.test$Loan_Status, positive = &quot;Y&quot;) </code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   Y   N
+##          Y 106  28
+##          N   3  26
+##                                         
+##                Accuracy : 0.8098        
+##                  95% CI : (0.741, 0.867)
+##     No Information Rate : 0.6687        
+##     P-Value [Acc &gt; NIR] : 4.578e-05     
+##                                         
+##                   Kappa : 0.514         
+##                                         
+##  Mcnemar&#39;s Test P-Value : 1.629e-05     
+##                                         
+##             Sensitivity : 0.9725        
+##             Specificity : 0.4815        
+##          Pos Pred Value : 0.7910        
+##          Neg Pred Value : 0.8966        
+##              Prevalence : 0.6687        
+##          Detection Rate : 0.6503        
+##    Detection Prevalence : 0.8221        
+##       Balanced Accuracy : 0.7270        
+##                                         
+##        &#39;Positive&#39; Class : Y             
+## </code></pre>
+<pre class="r"><code>test_score(forest_w)</code></pre>
+<pre><code>##        acc      sens      spec
+## 1 0.809816 0.9724771 0.4814815</code></pre>
+<p>In this particular case the result is identical as the one without weights. It is useless to add error weights.</p>
+</div>
+</div>
+<div id="bagging-bootstrap-aggregation" class="section level2">
+<h2>Bagging (Bootstrap aggregation)</h2>
+<pre class="r"><code>library(ipred)</code></pre>
+<pre class="r"><code>bag &lt;- bagging(Loan_Status ~ ., data = loan.train.train, nbagg = 2000)
+pred_bag &lt;- predict(bag, newdata = loan.train.test)
+
+confusionMatrix(pred_bag, loan.train.test$Loan_Status, positive = &quot;Y&quot;)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction  Y  N
+##          Y 99 28
+##          N 10 26
+##                                           
+##                Accuracy : 0.7669          
+##                  95% CI : (0.6943, 0.8294)
+##     No Information Rate : 0.6687          
+##     P-Value [Acc &gt; NIR] : 0.004083        
+##                                           
+##                   Kappa : 0.4255          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 0.005820        
+##                                           
+##             Sensitivity : 0.9083          
+##             Specificity : 0.4815          
+##          Pos Pred Value : 0.7795          
+##          Neg Pred Value : 0.7222          
+##              Prevalence : 0.6687          
+##          Detection Rate : 0.6074          
+##    Detection Prevalence : 0.7791          
+##       Balanced Accuracy : 0.6949          
+##                                           
+##        &#39;Positive&#39; Class : Y               
+## </code></pre>
+<div id="bagging-with-oob-out-of-box-error" class="section level3">
+<h3>Bagging with OOB (out of box) error</h3>
+<pre class="r"><code>bag2 &lt;- bagging(Loan_Status ~ ., data = loan.train.train, coob = TRUE, nbagg = 2000) 
+pred_bag2 &lt;- predict(bag2, newdata = loan.train.test)
+
+confusionMatrix(pred_bag2, loan.train.test$Loan_Status, positive = &quot;Y&quot;)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   Y   N
+##          Y 100  27
+##          N   9  27
+##                                           
+##                Accuracy : 0.7791          
+##                  95% CI : (0.7076, 0.8403)
+##     No Information Rate : 0.6687          
+##     P-Value [Acc &gt; NIR] : 0.001343        
+##                                           
+##                   Kappa : 0.4558          
+##                                           
+##  Mcnemar&#39;s Test P-Value : 0.004607        
+##                                           
+##             Sensitivity : 0.9174          
+##             Specificity : 0.5000          
+##          Pos Pred Value : 0.7874          
+##          Neg Pred Value : 0.7500          
+##              Prevalence : 0.6687          
+##          Detection Rate : 0.6135          
+##    Detection Prevalence : 0.7791          
+##       Balanced Accuracy : 0.7087          
+##                                           
+##        &#39;Positive&#39; Class : Y               
+## </code></pre>
+<p>Bagging with out of box estimator achieves better score, thus that version will be used in further analysis.</p>
+</div>
+</div>
+<div id="support-vector-machine" class="section level2">
+<h2>Support Vector Machine</h2>
+<p>There are two SVM methods additional with three kernels for classification problems. The most popular kernel to use is the radial kernel but now I’m going to find the best combination for our particular case.</p>
+<pre class="r"><code>library(e1071)</code></pre>
+<pre class="r"><code>cc1 &lt;- svm(Loan_Status ~ ., data = loan.train.train, type = &#39;C-classification&#39;, kernel = &quot;radial&quot;) 
+cc2 &lt;- svm(Loan_Status ~ ., data = loan.train.train, type = &#39;C-classification&#39;, kernel = &quot;sigmoid&quot;) 
+cc3 &lt;- svm(Loan_Status ~ ., data = loan.train.train, type = &#39;C-classification&#39;, kernel = &quot;polynomial&quot;) 
+
+test_score(cc1)</code></pre>
+<pre><code>##         acc      sens      spec
+## 1 0.7484663 0.8623853 0.5185185</code></pre>
+<pre class="r"><code>test_score(cc2)</code></pre>
+<pre><code>##        acc      sens      spec
+## 1 0.803681 0.9633028 0.4814815</code></pre>
+<pre class="r"><code>test_score(cc3)</code></pre>
+<pre><code>##         acc sens spec
+## 1 0.6687117    1    0</code></pre>
+<p>Best score for classification SVM type 1 (C-classification) on test dataset achieves sigmoid kernel.</p>
+<p>Now the check of the SVM type 2. The difference in types is between what error function the algorithm is minimizing.</p>
+<pre class="r"><code>nuc1 &lt;- svm(Loan_Status ~ ., data = loan.train.train, type = &#39;nu-classification&#39;, kernel = &quot;radial&quot;) 
+nuc2 &lt;- svm(Loan_Status ~ ., data = loan.train.train, type = &#39;nu-classification&#39;, kernel = &quot;sigmoid&quot;) 
+nuc3 &lt;- svm(Loan_Status ~ ., data = loan.train.train, type = &#39;nu-classification&#39;, kernel = &quot;polynomial&quot;) 
+
+test_score(nuc1)</code></pre>
+<pre><code>##        acc      sens      spec
+## 1 0.809816 0.9724771 0.4814815</code></pre>
+<pre class="r"><code>test_score(nuc2)</code></pre>
+<pre><code>##        acc      sens spec
+## 1 0.803681 0.9541284  0.5</code></pre>
+<pre class="r"><code>test_score(nuc3)</code></pre>
+<pre><code>##         acc      sens spec
+## 1 0.7852761 0.9266055  0.5</code></pre>
+<p>Best score for classification SVM type 2 (nu-classification) on test dataset achieves radial kernel. Nu classification has slightly better accuracy therefore it is the choice for test dataset from this classificator.</p>
+<pre class="r"><code>pred_svm &lt;- predict(nuc1, newdata = loan.train.test)
+confusionMatrix(pred_svm, loan.train.test$Loan_Status, positive = &quot;Y&quot;)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   Y   N
+##          Y 106  28
+##          N   3  26
+##                                         
+##                Accuracy : 0.8098        
+##                  95% CI : (0.741, 0.867)
+##     No Information Rate : 0.6687        
+##     P-Value [Acc &gt; NIR] : 4.578e-05     
+##                                         
+##                   Kappa : 0.514         
+##                                         
+##  Mcnemar&#39;s Test P-Value : 1.629e-05     
+##                                         
+##             Sensitivity : 0.9725        
+##             Specificity : 0.4815        
+##          Pos Pred Value : 0.7910        
+##          Neg Pred Value : 0.8966        
+##              Prevalence : 0.6687        
+##          Detection Rate : 0.6503        
+##    Detection Prevalence : 0.8221        
+##       Balanced Accuracy : 0.7270        
+##                                         
+##        &#39;Positive&#39; Class : Y             
+## </code></pre>
+</div>
+<div id="naive-bayes-classifier" class="section level2">
+<h2>Naive Bayes Classifier</h2>
+<pre class="r"><code>library(e1071)</code></pre>
+<pre class="r"><code>bayes &lt;- naiveBayes(Loan_Status ~ ., data = loan.train.train)
+test_score(bayes)</code></pre>
+<pre><code>##        acc      sens spec
+## 1 0.809816 0.9633028  0.5</code></pre>
+<p><code>naiveBayes</code> function allows us to set up the Laplace correction. In the simple loop, I’ll check which value if any suits our model.</p>
+<pre class="r"><code>df &lt;- data.frame(acc = NULL,sens = NULL,spec = NULL, i = NULL,j = NULL)
+for (i in 0:20) {
+  bay &lt;- naiveBayes(Loan_Status ~ ., data = loan.train.train, laplace = i)
+  df &lt;- rbind(df, test_score(bay, TRUE))
+}
+
+ggplot(df, aes(x = i, y = acc)) +
+  geom_line(color = &#39;#1B9E77&#39;) +
+  theme_minimal() +
+  scale_x_continuous(breaks = c(0:20)) +
+  geom_vline(xintercept = df[df$acc == max(df$acc),]$i, lty = 1, color = &quot;#D95F02&quot;)</code></pre>
+<p><img src="analysis_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>From the plot can be noticed a tendency that adding more corrections only weakens the accuracy of the model. The best decision, in this case, is not adding Laplace correction.</p>
+<pre class="r"><code>bayes &lt;- naiveBayes(Loan_Status ~ ., data = loan.train.train)
+pred_bayes &lt;- predict(bayes, newdata = loan.train.test)
+confusionMatrix(pred_bayes, loan.train.test$Loan_Status, positive = &quot;Y&quot;)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   Y   N
+##          Y 105  27
+##          N   4  27
+##                                         
+##                Accuracy : 0.8098        
+##                  95% CI : (0.741, 0.867)
+##     No Information Rate : 0.6687        
+##     P-Value [Acc &gt; NIR] : 4.578e-05     
+##                                         
+##                   Kappa : 0.5191        
+##                                         
+##  Mcnemar&#39;s Test P-Value : 7.772e-05     
+##                                         
+##             Sensitivity : 0.9633        
+##             Specificity : 0.5000        
+##          Pos Pred Value : 0.7955        
+##          Neg Pred Value : 0.8710        
+##              Prevalence : 0.6687        
+##          Detection Rate : 0.6442        
+##    Detection Prevalence : 0.8098        
+##       Balanced Accuracy : 0.7317        
+##                                         
+##        &#39;Positive&#39; Class : Y             
+## </code></pre>
+<p>##ROC curves</p>
+<pre class="r"><code>library(pROC)</code></pre>
+<pre><code>## 
+## Call:
+## roc.default(response = as.ordered(pred_forest), predictor = as.ordered(loan.train.test$Loan_Status),     plot = TRUE, add = TRUE, col = &quot;#D95F02&quot;)
+## 
+## Data: as.ordered(loan.train.test$Loan_Status) in 134 controls (as.ordered(pred_forest) Y) &lt; 29 cases (as.ordered(pred_forest) N).
+## Area under the curve: 0.8438</code></pre>
+<pre><code>## 
+## Call:
+## roc.default(response = as.ordered(pred_bag2), predictor = as.ordered(loan.train.test$Loan_Status),     plot = TRUE, add = TRUE, col = &quot;#7570B3&quot;)
+## 
+## Data: as.ordered(loan.train.test$Loan_Status) in 36 controls (as.ordered(pred_bag2) N) &gt; 127 cases (as.ordered(pred_bag2) Y).
+## Area under the curve: 0.7687</code></pre>
+<pre><code>## 
+## Call:
+## roc.default(response = as.ordered(pred_svm), predictor = as.ordered(loan.train.test$Loan_Status),     plot = TRUE, add = TRUE, col = &quot;#E7298A&quot;)
+## 
+## Data: as.ordered(loan.train.test$Loan_Status) in 134 controls (as.ordered(pred_svm) Y) &lt; 29 cases (as.ordered(pred_svm) N).
+## Area under the curve: 0.8438</code></pre>
+<pre><code>## 
+## Call:
+## roc.default(response = as.ordered(pred_bayes), predictor = as.ordered(loan.train.test$Loan_Status),     plot = TRUE, add = TRUE, col = &quot;#66A61E&quot;)
+## 
+## Data: as.ordered(loan.train.test$Loan_Status) in 132 controls (as.ordered(pred_bayes) Y) &lt; 31 cases (as.ordered(pred_bayes) N).
+## Area under the curve: 0.8332</code></pre>
+<p><img src="analysis_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>df &lt;- rbind(test_score(tree_w),
+            test_score(forest),
+            test_score(bag2),
+            test_score(nuc1),
+            test_score(bayes))
+df</code></pre>
+<pre><code>##         acc      sens      spec
+## 1 0.8282209 0.9633028 0.5555556
+## 2 0.8098160 0.9724771 0.4814815
+## 3 0.7791411 0.9174312 0.5000000
+## 4 0.8098160 0.9724771 0.4814815
+## 5 0.8098160 0.9633028 0.5000000</code></pre>
+<p>ROC curve, as well as a confusion matrix, indicates that the best classifiers in that analysis is weighted tree classification. Although the predicted dataset is automatically checked on the contest website, so I will compare the results of each of the models.</p>
+<p>After finding out the score on real test dataset for each method, the result is a little bit surprising. In the last final data frame, I will present accuracy.</p>
+<pre class="r"><code>results &lt;- data.frame(&#39;Weighted tree classifier&#39; = 0.75, &#39;Random forest&#39; = 0.78, &#39;Bagging&#39; =  0.76, &#39;SVM method&#39; = 0.77, &#39;Naive Bayes&#39; =  0.75)
+results</code></pre>
+<pre><code>##   Weighted.tree.classifier Random.forest Bagging SVM.method Naive.Bayes
+## 1                     0.75          0.78    0.76       0.77        0.75</code></pre>
+<p>Random forest managed to get 78% accuracy which was the highest, from all my predictors. In my judgment, that score is not bad if the dataset and case were real. In the contest data as it is here, it could be better.</p>
+</div>
+</div>
+<div id="bibliography-and-used-links" class="section level1">
+<h1>4. Bibliography and used links</h1>
+<ul>
+<li>Educational materials for <em>IT &amp; Econometrics classes</em> at University of Lodz - prof. C. Domański, dr M. Misztal, dr P. Szczepocki</li>
+<li>Statistica software instruction</li>
+<li><a href="https://www.rdocumentation.org">R documentation</a></li>
+<li><a href="https://www.analyticsvidhya.com">AnalyticsVidhya</a></li>
+<li><a href="http://www.sthda.com">STHDA</a></li>
+</ul>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

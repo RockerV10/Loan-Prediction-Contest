@@ -1,0 +1,522 @@
+---
+title: "Loan Prediction analysis"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    collapsed: false
+    number_sections: false
+    toc_depth: 1
+    #code_folding: hide
+---
+# 1. Data cleaning
+
+```{r necessary packages, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
+library(readr)  
+library(dplyr)     
+library(zoo)
+library(forcats) # adding a new value to the categorical variable
+```
+
+- **Loading train and test datasets**
+```{r, include=FALSE}
+train_git <- "https://gist.githubusercontent.com/RockerV10/9b3b40c2d53a5ca1127f4c3165c57b37/raw/06ec84a1fe279f0a1a9b03b58062979acfb37cd7/loan_train.csv"
+test_git <- "https://gist.githubusercontent.com/RockerV10/9b3b40c2d53a5ca1127f4c3165c57b37/raw/06ec84a1fe279f0a1a9b03b58062979acfb37cd7/loan_test.csv"
+```
+
+
+```{r data loading, include=FALSE}
+loan.train <- read_csv(train_git, col_types = cols(Credit_History = col_factor(levels = c("0", "1", "Missing")),
+                                                     Dependents = col_factor(levels = c("0", "1", "2", "3+", "Missing")),
+                                                     Education = col_factor(levels = c("Graduate", "Not Graduate", "Missing")),
+                                                     Gender = col_factor(levels = c("Male", "Female", "Missing")),
+                                                     Loan_Status = col_factor(levels = c("Y", "N")),
+                                                     Married = col_factor(levels = c("Yes", "No", "Missing")),
+                                                     Property_Area = col_factor(levels = c("Urban", "Semiurban", "Rural", "Missing")),
+                                                     Self_Employed = col_factor(levels = c("No", "Yes", "Missing")),
+                                                     Loan_Amount_Term = col_factor(levels = c('6', '12',  '36',  '60',  '84', '120', '180', '240', '300', '350', '360', '480', "Missing"))))
+
+loan.test <- read_csv(test_git, col_types = cols(Credit_History = col_factor(levels = c("0", "1", "Missing")),
+                                                   Dependents = col_factor(levels = c("0", "1", "2", "3+", "Missing")),
+                                                   Education = col_factor(levels = c("Graduate", "Not Graduate", "Missing")),
+                                                   Gender = col_factor(levels = c("Male", "Female", "Missing")),
+                                                   Married = col_factor(levels = c("Yes", "No", "Missing")),
+                                                   Property_Area = col_factor(levels = c("Urban", "Semiurban", "Rural", "Missing")),
+                                                   Self_Employed = col_factor(levels = c("No", "Yes", "Missing")),
+                                                   Loan_Amount_Term = col_factor(levels = c('6', '12',  '36',  '60',  '84', '120', '180', '240', '300', '350', '360', '480', "Missing"))))
+
+
+
+
+```
+
+- **Quick examination of data **
+```{r data review}
+summary(loan.train)
+
+```
+```Loan_ID``` column is useless for analysis and will confuse our model.
+```NA``` values in catogical variables will be clasified as new factor ***Missing***.
+Only continuous variable with ```NA``` is ```LoanAmount```, and these values will be replaced with mean of this column.
+
+```{r removing of columns}
+loan.train <- select(loan.train, -1) 
+```
+```{r replace NA}
+loan.train$Gender <- fct_explicit_na(loan.train$Gender, na_level = 'Missing')
+loan.train$Married <- fct_explicit_na(loan.train$Married, na_level = 'Missing')
+loan.train$Dependents <- fct_explicit_na(loan.train$Dependents, na_level = 'Missing')
+loan.train$Education <- fct_explicit_na(loan.train$Education, na_level = 'Missing')
+loan.train$Self_Employed <- fct_explicit_na(loan.train$Self_Employed, na_level = 'Missing')
+loan.train$Loan_Amount_Term <- fct_explicit_na(loan.train$Loan_Amount_Term, na_level = 'Missing')
+loan.train$Credit_History <- fct_explicit_na(loan.train$Credit_History, na_level = 'Missing')
+loan.train$Property_Area <- fct_explicit_na(loan.train$Property_Area, na_level = 'Missing')
+loan.train$LoanAmount <- na.aggregate(loan.train$LoanAmount)
+
+loan.test$Gender <- fct_explicit_na(loan.test$Gender, na_level = 'Missing')
+loan.test$Married <- fct_explicit_na(loan.test$Married, na_level = 'Missing')
+loan.test$Dependents <- fct_explicit_na(loan.test$Dependents, na_level = 'Missing')
+loan.test$Education <- fct_explicit_na(loan.test$Education, na_level = 'Missing')
+loan.test$Self_Employed <- fct_explicit_na(loan.test$Self_Employed, na_level = 'Missing')
+loan.test$Loan_Amount_Term <- fct_explicit_na(loan.test$Loan_Amount_Term, na_level = 'Missing')
+loan.test$Credit_History <- fct_explicit_na(loan.test$Credit_History, na_level = 'Missing')
+loan.test$Property_Area <- fct_explicit_na(loan.test$Property_Area, na_level = 'Missing')
+loan.test$LoanAmount <- na.aggregate(loan.test$LoanAmount)
+
+```
+
+# 2. Visualisation and overview data by ```ggplot2``` package.
+I have loaded the data and set column types as below
+## Description of variables
+I have loaded the data and set column types as below
+
+  - Gender: ***dichotomous variable*** - ```male```, ```female``` 
+  - Married : ***dichotomous variable*** -  ```Y ``` , ```N``` 
+  - Dependents : ***categorical variable*** - number of dependents ```0```, ```1```, ```2```, ```+3```
+  - Education : ***categorical variable*** -  ```Graduate``` , ```Not Graduate```
+  - Self_Employed : ***dichotomous variable*** - ```Y ``` , ```N```
+  - ApplicantIncome : ***continuous variable*** - applicant income
+  - CoapplicantIncome : ***continuous variable*** - coapplicant income
+  - LoanAmount : ***continuous variable*** - amount of loan
+  - Loan_Amount_Term: ***categorical variable*** - term of loan in months ```6```, ```12```,  ```36```,  ```60```,  ```84```, ```120```, ```180```, ```240```, ```300```, ```350```, ```360```, ```480```
+  - Credit_History : ***dichotomous variable*** - credit history meets guidelines ```1``` Yes, ```0``` No
+  - Property_Area : ***categorical variable *** - ```Urban```, ```Semi Urban```, ```Rural```
+  - Loan_Status : ***explained dichotomous variable*** loan approved ```Y``` , ```N``` 
+  
+## Again summary of train dataset
+```{r head}
+summary(loan.train)
+```
+
+## Creating simple plots for review
+```{r ggplot lib, message=FALSE, warning=FALSE}
+library(ggplot2)
+```
+
+
+```{r plotting via ggplot, include=FALSE}
+Loan_Status.labs <- c("approved", "not approved")
+names(Loan_Status.labs) <- c('Y', 'N')
+
+design <- theme_minimal() +                   
+          theme(axis.title = element_blank(), 
+                axis.text = element_blank(),
+                axis.ticks.x = element_blank(),
+                strip.text.x = element_text(size = 8, angle = 45),
+                plot.title = element_text(hjust = 0.5, face = 'bold'),
+                plot.subtitle = element_text(hjust = 0.5))
+
+
+plot.gender <- ggplot(loan.train, aes(x = Gender,fill = Gender)) +
+  geom_bar() +
+  facet_grid(~Loan_Status, labeller = labeller(Loan_Status = Loan_Status.labs)) +
+  scale_fill_brewer(palette = 'Dark2', name = '') +
+  ggtitle('Gender', subtitle = 'Credit') +
+  design
+
+plot.dependents <- ggplot(loan.train, aes(x = Dependents, fill = Dependents)) +
+  geom_bar() + 
+  facet_grid(~Loan_Status, labeller = labeller(Loan_Status = Loan_Status.labs)) +
+  scale_fill_brewer(palette = 'Dark2', name = '') +
+  ggtitle('Dependents', subtitle = 'Credit') +
+  design
+
+plot.education <- ggplot(loan.train, aes(x = Education, fill = Education)) +
+  geom_bar() + 
+  facet_grid(~Loan_Status, labeller = labeller(Loan_Status = Loan_Status.labs)) +
+  scale_fill_brewer(palette = 'Dark2', name = '') +
+  ggtitle('Education', subtitle = 'Credit') +
+  design
+
+plot.married <- ggplot(loan.train, aes(x = Married, fill = Married)) +
+  geom_bar() + 
+  facet_grid(~Loan_Status, labeller = labeller(Loan_Status = Loan_Status.labs)) +
+  scale_fill_brewer(palette = 'Dark2', name = '') +
+  ggtitle('Married', subtitle = 'Credit') +
+  design
+
+plot.property <- ggplot(loan.train, aes(x = Property_Area, fill = Property_Area)) +
+  geom_bar() + 
+  facet_grid(~Loan_Status, labeller = labeller(Loan_Status = Loan_Status.labs)) +
+  scale_fill_brewer(palette = 'Dark2', name = '') +
+  ggtitle('Property area', subtitle = 'Credit') +
+  design
+
+plot.selfemployed <- ggplot(loan.train, aes(x = Self_Employed, fill = Self_Employed)) +
+  geom_bar() + 
+  facet_grid(~Loan_Status, labeller = labeller(Loan_Status = Loan_Status.labs)) +
+  scale_fill_brewer(palette = 'Dark2', name = '') +
+  ggtitle('Self employeed', subtitle = 'credit') +
+  design
+
+plot.credit <- ggplot(loan.train, aes(x = Credit_History, fill = Credit_History)) +
+  geom_bar() + 
+  facet_grid(~Loan_Status, labeller = labeller(Loan_Status = Loan_Status.labs)) +
+  scale_fill_brewer(palette = 'Dark2', breaks = c(0, 1), labels = c('No', 'Yes'), name = '') +
+  ggtitle('Credit history', subtitle = 'Credit') +
+  design
+
+plot.income <- ggplot(loan.train, aes(x = ApplicantIncome, fill = Loan_Status)) +
+  geom_histogram() + 
+  scale_fill_brewer(palette = 'Dark2', labels = c('Yes', 'No'), name = 'Credit') +
+  theme_minimal() +
+  ggtitle('Applicant income') +
+  labs(x = '$') +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        plot.title = element_text(hjust = 0.5, face = 'bold'))
+
+plot.term <- ggplot(loan.train, aes(x = Loan_Amount_Term, fill = Loan_Status)) +
+  geom_bar() +
+  scale_fill_brewer(palette = 'Dark2', labels = c('Yes', 'No'), name = 'Credit') +
+  ggtitle('Loan amount term') +
+  labs(x = 'Amount of months') +
+  theme_minimal() +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        plot.title = element_text(hjust = 0.5, face = 'bold'))
+
+plot.income2 <- ggplot(loan.train, aes(x = CoapplicantIncome, fill = Loan_Status)) +
+  geom_histogram() + 
+  scale_fill_brewer(palette = 'Dark2', labels = c('Yes', 'No'), name = 'Credit') +
+  theme_minimal() +
+  ggtitle('Coapplicant income') +
+  labs(x = '$') +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        plot.title = element_text(hjust = 0.5, face = 'bold'),
+        axis.text.x = element_text(angle = 45))
+
+plot.amount <- ggplot(loan.train, aes(x = LoanAmount, fill = Loan_Status)) +
+  geom_histogram() + 
+  scale_fill_brewer(palette = 'Dark2', labels = c('Yes', 'No'), name = 'Credit') +
+  theme_minimal() +
+  ggtitle('Amount of loan') +
+  labs(x = 'K $') +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        plot.title = element_text(hjust = 0.5, face = 'bold'))
+```
+```{r grid pcg, message=FALSE, warning=FALSE, include=FALSE}
+library(gridExtra)
+```
+```{r presentation of plots, echo=FALSE, message=FALSE, warning=FALSE}
+grid.arrange(plot.gender, plot.married, plot.education, plot.dependents, ncol = 2)
+grid.arrange(plot.income, plot.income2, plot.amount, plot.term, ncol = 2)
+grid.arrange(plot.property, plot.selfemployed, plot.credit, ncol = 2)
+```
+
+### Conclusion
+Shown plots show that variables will not differentiate the matter of granting a loan. Although variables such as the number of dependents, area of the property and certainly if credit history met guidelines can be statistically significant.
+
+
+
+# 3. Analysis
+```{r caret pcg, message=FALSE, warning=FALSE}
+library(caret) # confusion matrix
+
+```
+
+
+
+## Divison of the dataset into train and test parts **(3:1 ratio)**
+```{r split}
+set.seed(1998) # seed for repeated values
+
+divide = sample(2, nrow(loan.train), replace = TRUE, prob = c(0.75, 0.25))
+loan.train.train <- loan.train[divide == 1, ] 
+loan.train.test <- loan.train[divide == 2, ] 
+```
+
+## Tree clasification
+```{r party lib, message=FALSE, warning=FALSE}
+library(party) # tree clasification and random forrests
+
+```
+
+#### Firstly I'm checking score for single tree classification on the test dataset.
+```{r tree train}
+tree <- ctree(Loan_Status ~ ., data = loan.train.train)
+plot(tree)
+confusionMatrix(predict(tree), loan.train.train$Loan_Status, positive = "Y")
+
+```
+
+
+Single tree not surprisingly indicates that  ```Credit_History``` is the main factor when predicting. Applicants with positive result ```1``` or ```NA``` as ```Missing``` values were granted a mortgage. 80.9% accuracy is not a bad score, but for train set it could be much better.
+
+#### Test dataset
+```{r tree test}
+pred_tree = predict(tree, newdata = loan.train.test)
+confusionMatrix(pred_tree, loan.train.test$Loan_Status, positive = "Y") 
+
+```
+
+Score on test dataset is the same, as on training. 
+What is worth mentioning is that sensitivity is close to 97%, but specificity is unacceptably low. After all bank probably 'prefers' to not grant a loan to a person who could afford it and lose earning opportunity, than granting it to a person who will not pay instalments and the company will lose actual money. In that case, I think it would be good to try the weighted version of tree classification.
+
+For future analysis, I've created a function which will help to track scores and iterations.
+```{r weight function}
+
+test_score <- function(x, loop = FALSE) {
+  if (loop == TRUE) {
+  pred_x <- predict(x, newdata = loan.train.test)
+  cf.2 <- confusionMatrix(pred_x, loan.train.test$Loan_Status, positive = "Y")
+  score <- (data.frame(acc = cf.2$overall[['Accuracy']],
+                       sens = cf.2$byClass[['Sensitivity']],
+                       spec = cf.2$byClass[['Specificity']],
+                       i = i,
+                       j = j))}
+  if (loop == FALSE) { 
+    pred_x <- predict(x, newdata = loan.train.test)
+    cf.2 <- confusionMatrix(pred_x, loan.train.test$Loan_Status, positive = "Y")
+    score <- (data.frame(acc = cf.2$overall[['Accuracy']],
+                         sens = cf.2$byClass[['Sensitivity']],
+                         spec = cf.2$byClass[['Specificity']]))
+    
+  }
+  return(score)          
+}
+
+```
+
+It tracks accuracy, sensitivity, specificity and ```i``` and ```j``` weight parameters (if needed) for *test* dataset.
+
+#### Combination of weighted errors (from 1 to 10)
+```{r ij loop}
+df <- data.frame(acc = NULL,sens = NULL,spec = NULL, i = NULL,j = NULL)  #empty dataframe
+for (i in 1:20) {
+  for (j in 1:20) {
+    tree_w <- ctree(Loan_Status ~ ., data = loan.train.train, weights = ifelse(loan.train.train$Loan_Status == 'Y', i, j))
+       df <- rbind(df,test_score(tree_w, loop = TRUE))
+    }
+}
+
+df[df$acc == max(df$acc),] # show rows only with the best score
+
+```
+```{r tree w train}
+tree_w <- ctree(Loan_Status ~ ., data = loan.train.train, weights = ifelse(loan.train.train$Loan_Status == 'Y', 3, 4))
+pred_tree_w <- predict(tree_w, newdata = loan.train.test)
+confusionMatrix(pred_tree_w, loan.train.test$Loan_Status, positive = "Y")
+
+```
+
+As we can see weighted errors helped (for the error pair 3, 4). The total outcome increased by almost 2 points in comparison to the first attempt. Even more important is that specificity developed to the level of 55%. It is still disappointing but better that it was before. Mcnemar's test only confirms my theory that the difference between sensitivity and specificity is statistically significant. (p-value < $\alpha$)
+## Random forests
+
+#### Training dataset, the number of trees is set to 200.
+```{r forest train}
+forest <- cforest(Loan_Status ~ ., data = loan.train.train, control = cforest_unbiased(ntree = 200))
+confusionMatrix(predict(forest), loan.train.train$Loan_Status)
+```
+
+#### Test dataset
+```{r forest test}
+pred_forest = predict(forest, newdata = loan.train.test)
+confusionMatrix(pred_forest, loan.train.test$Loan_Status, positive = "Y") 
+```
+
+### Combination of weighted errors (from 1 to 10)
+
+```{r ij loop2}
+df <- data.frame(acc = NULL,sens = NULL,spec = NULL, i = NULL,j = NULL)
+for (i in 1:10) {
+  for (j in 1:10) {
+    forest_w <- cforest(Loan_Status ~ ., data = loan.train.train, control = cforest_unbiased(ntree = 200), weights = ifelse(loan.train.train$Loan_Status == 'Y', i, j))
+    df <- rbind(df, test_score(forest_w, TRUE))
+    }
+}
+
+head(df[df$acc == max(df$acc),])
+
+
+```
+```{r forest w test}
+forest_w <- cforest(Loan_Status ~ ., data = loan.train.train, control = cforest_unbiased(ntree = 200), weights = ifelse(loan.train.train$Loan_Status == 'Y', 1, 8))
+pred_forest_w = predict(forest_w, newdata = loan.train.test)
+
+confusionMatrix(pred_forest_w, loan.train.test$Loan_Status, positive = "Y") 
+test_score(forest_w)
+
+```
+
+In this particular case the result is identical as the one without weights. It is useless to add error weights.
+
+## Bagging (Bootstrap aggregation)
+```{r ipred lib, message=FALSE, warning=FALSE}
+library(ipred)
+
+```
+```{r bag, message=FALSE, warning=FALSE}
+bag <- bagging(Loan_Status ~ ., data = loan.train.train, nbagg = 2000)
+pred_bag <- predict(bag, newdata = loan.train.test)
+
+confusionMatrix(pred_bag, loan.train.test$Loan_Status, positive = "Y")
+
+```
+### Bagging with OOB (out of box) error
+```{r bag2, message=FALSE, warning=FALSE}
+bag2 <- bagging(Loan_Status ~ ., data = loan.train.train, coob = TRUE, nbagg = 2000) 
+pred_bag2 <- predict(bag2, newdata = loan.train.test)
+
+confusionMatrix(pred_bag2, loan.train.test$Loan_Status, positive = "Y")
+
+```
+Bagging with out of box estimator achieves better score, thus that version will be used in further analysis.
+
+
+## Support Vector Machine
+
+There are two SVM methods additional with three kernels for classification problems. The most popular kernel to use is the radial kernel but now I'm going to find the best combination for our particular case.
+
+```{r r1071 lib, message=FALSE, warning=FALSE}
+library(e1071)
+```
+```{r svm c}
+cc1 <- svm(Loan_Status ~ ., data = loan.train.train, type = 'C-classification', kernel = "radial") 
+cc2 <- svm(Loan_Status ~ ., data = loan.train.train, type = 'C-classification', kernel = "sigmoid") 
+cc3 <- svm(Loan_Status ~ ., data = loan.train.train, type = 'C-classification', kernel = "polynomial") 
+
+test_score(cc1)
+test_score(cc2)
+test_score(cc3)
+
+```
+Best score for classification SVM type 1 (C-classification) on test dataset achieves sigmoid kernel.
+
+Now the check of the SVM type 2. The difference in types is between what error function the algorithm is minimizing.
+```{r svm nu}
+nuc1 <- svm(Loan_Status ~ ., data = loan.train.train, type = 'nu-classification', kernel = "radial") 
+nuc2 <- svm(Loan_Status ~ ., data = loan.train.train, type = 'nu-classification', kernel = "sigmoid") 
+nuc3 <- svm(Loan_Status ~ ., data = loan.train.train, type = 'nu-classification', kernel = "polynomial") 
+
+test_score(nuc1)
+test_score(nuc2)
+test_score(nuc3)
+
+```
+Best score for classification SVM type 2 (nu-classification) on test dataset achieves radial kernel. Nu classification has slightly better accuracy therefore it is the choice for test dataset from this classificator.
+
+```{r}
+pred_svm <- predict(nuc1, newdata = loan.train.test)
+confusionMatrix(pred_svm, loan.train.test$Loan_Status, positive = "Y")
+```
+
+
+
+## Naive Bayes Classifier 
+```{r e1071 lib, message=FALSE, warning=FALSE}
+library(e1071)
+```
+```{r}
+bayes <- naiveBayes(Loan_Status ~ ., data = loan.train.train)
+test_score(bayes)
+```
+```naiveBayes``` function allows us to set up the Laplace correction. In the simple loop, I'll check which value if any suits our model.
+```{r}
+df <- data.frame(acc = NULL,sens = NULL,spec = NULL, i = NULL,j = NULL)
+for (i in 0:20) {
+  bay <- naiveBayes(Loan_Status ~ ., data = loan.train.train, laplace = i)
+  df <- rbind(df, test_score(bay, TRUE))
+}
+
+ggplot(df, aes(x = i, y = acc)) +
+  geom_line(color = '#1B9E77') +
+  theme_minimal() +
+  scale_x_continuous(breaks = c(0:20)) +
+  geom_vline(xintercept = df[df$acc == max(df$acc),]$i, lty = 1, color = "#D95F02")
+
+```
+
+From the plot can be noticed a tendency that adding more corrections only weakens the accuracy of the model. The best decision, in this case, is not adding Laplace correction.
+```{r}
+bayes <- naiveBayes(Loan_Status ~ ., data = loan.train.train)
+pred_bayes <- predict(bayes, newdata = loan.train.test)
+confusionMatrix(pred_bayes, loan.train.test$Loan_Status, positive = "Y")
+
+```
+
+##ROC curves
+```{r message=FALSE, warning=FALSE}
+library(pROC)
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot(roc(as.ordered(pred_tree_w), as.ordered(loan.train.test$Loan_Status)), col = "#1B9E77", main = 'ROC curve' )
+roc(as.ordered(pred_forest), as.ordered(loan.train.test$Loan_Status), plot = TRUE, add = TRUE, col = "#D95F02")
+roc(as.ordered(pred_bag2), as.ordered(loan.train.test$Loan_Status), plot = TRUE, add = TRUE, col = "#7570B3" )
+roc(as.ordered(pred_svm), as.ordered(loan.train.test$Loan_Status), plot = TRUE, add = TRUE, col = "#E7298A")
+roc(as.ordered(pred_bayes), as.ordered(loan.train.test$Loan_Status), plot = TRUE, add = TRUE, col = "#66A61E")
+legend("bottomright", legend = c('Weighted tree classifier', 'Random forest', 'Bagging', 'SVM method', 'Naive Bayes'),
+       col = c("#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E"),
+       lty = 1,
+       lwd = 2,
+       box.lty = 0)
+```
+
+
+```{r message=FALSE, warning=FALSE}
+df <- rbind(test_score(tree_w),
+            test_score(forest),
+            test_score(bag2),
+            test_score(nuc1),
+            test_score(bayes))
+df
+```
+ROC curve, as well as a confusion matrix, indicates that the best classifiers in that analysis is weighted tree classification. Although the predicted dataset is automatically checked on the contest website, so I will compare the results of each of the models.
+```{r csv, eval=FALSE, include=FALSE}
+
+pred_tree_w <- predict(tree_w, newdata = loan.test)
+pred_forest <- predict(forest, newdata = loan.test)
+pred_bag <- predict(bag2, newdata = loan.test)
+pred_svm <- predict(nuc1, newdata = loan.test)
+pred_bayes <- predict(bayes, newdata = loan.test)
+
+tree <- data.frame('Loan_ID' = loan.test[,1], 'Loan_Status' = pred_tree_w)
+forest <- data.frame('Loan_ID' = loan.test[,1], 'Loan_Status' = pred_forest)
+bag <- data.frame('Loan_ID' = loan.test[,1], 'Loan_Status' = pred_bag)
+svm <- data.frame('Loan_ID' = loan.test[,1], 'Loan_Status' = pred_svm)
+bayes <- data.frame('Loan_ID' = loan.test[,1], 'Loan_Status' = pred_bayes)
+
+write.csv(tree, file = 'tree.csv', row.names = FALSE)
+write.csv(forest, file = 'forest.csv', row.names = FALSE)
+write.csv(bag, file = 'bagging.csv', row.names = FALSE)
+write.csv(svm, file = 'svm.csv', row.names = FALSE)
+write.csv(bayes, file = 'bayes.csv', row.names = FALSE)
+
+```
+After finding out the score on real test dataset for each method, the result is a little bit surprising. In the last final data frame, I will present accuracy.
+```{r final df}
+results <- data.frame('Weighted tree classifier' = 0.75, 'Random forest' = 0.78, 'Bagging' =  0.76, 'SVM method' = 0.77, 'Naive Bayes' =  0.75)
+results
+
+```
+Random forest managed to get 78% accuracy which was the highest, from all my predictors. In my judgment, that score is not bad if the dataset and case were real. In the contest data as it is here, it could be better.
+
+# 4. Bibliography and used links
+
+- Educational materials for *IT & Econometrics classes* at University of Lodz - prof. C. Domański, dr M. Misztal, dr P. Szczepocki
+- Statistica software instruction
+- [R documentation](https://www.rdocumentation.org)
+- [AnalyticsVidhya](https://www.analyticsvidhya.com)
+- [STHDA](http://www.sthda.com)
