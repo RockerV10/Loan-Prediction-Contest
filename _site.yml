@@ -1,6 +1,6 @@
 name: "Loan Prediction"
 navbar:
-  title: "Loan Prediction"
+  title: "Loan prediction"
   left:
     - text: "Read Me"
       href: index.html

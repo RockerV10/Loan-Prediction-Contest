@@ -18,7 +18,7 @@ library(zoo)
 library(forcats) # adding a new value to the categorical variable
 ```
 
-- **Loading train and test datasets**
+
 ```{r, include=FALSE}
 train_git <- "https://gist.githubusercontent.com/RockerV10/9b3b40c2d53a5ca1127f4c3165c57b37/raw/06ec84a1fe279f0a1a9b03b58062979acfb37cd7/loan_train.csv"
 test_git <- "https://gist.githubusercontent.com/RockerV10/9b3b40c2d53a5ca1127f4c3165c57b37/raw/06ec84a1fe279f0a1a9b03b58062979acfb37cd7/loan_test.csv"
