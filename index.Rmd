@@ -8,6 +8,8 @@ This is machine learning examination. Dataset and problem statement is used from
 Full analysis, along with a description, was prepared and executed in **R Markdown**.
 This workbook was also used as semester evaluation for the subject ***Non-classical statistical methods***.
 
+[GitHub repository](https://github.com/RockerV10/Loan-prediction-contest) for this analysis.
+
 ## **Work problem**
   
 This database contains data from **Dream Housing Finance** company regarding mortgages. DHF wants to automatize the evaluation of new customers. 
