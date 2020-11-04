@@ -942,7 +942,12 @@ confusionMatrix(pred_bayes, loan.train.test$Loan_Status, positive = &quot;Y&quot
 ##                                         
 ##        &#39;Positive&#39; Class : Y             
 ## </code></pre>
-<p>##ROC curves</p>
+</div>
+</div>
+<div id="results" class="section level1">
+<h1>4. Results</h1>
+<div id="roc-curves" class="section level2">
+<h2>ROC curves</h2>
 <pre class="r"><code>library(pROC)</code></pre>
 <pre><code>## 
 ## Call:
@@ -987,11 +992,11 @@ df</code></pre>
 results</code></pre>
 <pre><code>##   Weighted.tree.classifier Random.forest Bagging SVM.method Naive.Bayes
 ## 1                     0.75          0.78    0.76       0.77        0.75</code></pre>
-<p>Random forest managed to get 78% accuracy which was the highest, from all my predictors. In my judgment, that score is not bad if the dataset and case were real. In the contest data as it is here, it could be better.</p>
+<p>Random forest managed to get 78% accuracy which was the highest, from all my predictors. In my judgment, that score is not bad if the dataset and case were real. In the contest data as it is here, it could be better. To improve the score <code>NA</code> values could be assigned to existing values, based on other parameters of each observation. Also changing the <strong><em>train:test</em></strong> ratio could enhance the performance.</p>
 </div>
 </div>
 <div id="bibliography-and-used-links" class="section level1">
-<h1>4. Bibliography and used links</h1>
+<h1>5. Bibliography and used links</h1>
 <ul>
 <li>Educational materials for <em>IT &amp; Econometrics classes</em> at University of Lodz - prof. C. Domański, dr M. Misztal, dr P. Szczepocki</li>
 <li>Statistica software instruction</li>

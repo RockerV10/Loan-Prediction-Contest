@@ -456,8 +456,8 @@ pred_bayes <- predict(bayes, newdata = loan.train.test)
 confusionMatrix(pred_bayes, loan.train.test$Loan_Status, positive = "Y")
 
 ```
-
-##ROC curves
+# 4. Results
+## ROC curves
 ```{r message=FALSE, warning=FALSE}
 library(pROC)
 ```
@@ -512,8 +512,9 @@ results
 
 ```
 Random forest managed to get 78% accuracy which was the highest, from all my predictors. In my judgment, that score is not bad if the dataset and case were real. In the contest data as it is here, it could be better.
+To improve the score ```NA``` values could be assigned to existing values, based on other parameters of each observation. Also changing the ***train:test*** ratio could enhance the performance.
 
-# 4. Bibliography and used links
+# 5. Bibliography and used links
 
 - Educational materials for *IT & Econometrics classes* at University of Lodz - prof. C. Domański, dr M. Misztal, dr P. Szczepocki
 - Statistica software instruction
